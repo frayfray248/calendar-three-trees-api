@@ -1,0 +1,15 @@
+{
+  "name": "calendar-api",
+  "version": "1.0.0",
+  "description": "a node.js RESTful API for Three Trees Calendar WordPress plugin",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Fraser Macallum",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mysql": "^2.18.1"
+  }
+}
