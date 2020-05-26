@@ -10,6 +10,11 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "swagger-parser": "^9.0.1",
+    "swagger-spec-validator": "^4.0.1",
+    "swagger-ui": "^3.25.4",
+    "swagger-ui-express": "^4.1.4",
+    "yamljs": "^0.3.0"
   }
 }

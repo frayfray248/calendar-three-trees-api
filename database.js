@@ -1,12 +1,11 @@
 var mysql = require('mysql');
 
-var con = mysql.createConnection({
+var database = mysql.createConnection({
   host: "mysqlcapstone.3treestech.ca",
   user: "capstonem2020",
-  password: "S54Au*6zskH*9iE"
+  password: "S54Au*6zskH*9iE",
+  database: "capstonescheduling2020m",
+  port: '3306'
 });
 
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-});
+module.exports = database;

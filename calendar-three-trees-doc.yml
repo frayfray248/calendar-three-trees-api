@@ -1,0 +1,61 @@
+openapi: 3.0.0
+info:
+  title: 'calendar-three-trees-api'
+  description: 'The REST api for the Calendar Three Trees App'
+  version: 1.0.0
+
+servers:
+  - url: http://calendarapi.3treestech.ca/
+    description: Main (development) server
+
+components:
+  schemas:
+    Event:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        content:
+          type: string
+        moreInfoURL:
+          type: string
+          format: uri
+        contact:
+          type: string
+        eventDate:
+          type: string
+          format: date-time
+        dateCreated:
+          type: string
+          format: date-time
+        groupId:
+          type: integer
+      required:
+        - id
+        - name
+        - dateCreated
+        - groupId
+
+paths:
+  /groups/#/events/:
+    post:
+      summary: Creates a new event
+      description: Creates a new event in a specific group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/Event'
+      responses:
+        '201':
+          description: Returns the created event in a specific group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
