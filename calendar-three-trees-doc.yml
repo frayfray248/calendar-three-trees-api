@@ -71,6 +71,55 @@ paths:
           description: Bad or malformed request
         '401':
           description: Unauthorized request
+    get:
+      summary: Get events
+      description: Get all the events in a specific group
+      parameters:
+        - in: query
+          name: tags
+          schema:
+            type: array
+            items:
+              type: string
+          description: The tags to be used to filter the events
+        - in: query
+          name: dates
+          schema:
+            type: array
+            items:
+              type: string
+              format: date-time
+          description: The dates to be used to filter the events
+        - in: query
+          name: dateRange
+          schema:
+            type: array
+            items:
+              type: string
+              format: date-time
+              minItems: 1
+              maxItems: 2
+          description: The date range to be used to filter the events
+        - in: query
+          name: contentSearchTerm
+          schema:
+            type: string
+          description: the search terms to be used to filter the events
+      responses:
+        '200':
+          description: Successfully retrieved searched events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '400':
+          description: Bad or malformed request
+        '401':
+          description: Unauthorized request
+        '404':
+          description: No events found matching the search criteria
   /groups/{groupId}/events/{eventId}:
     parameters:
       - in: path
@@ -133,4 +182,4 @@ paths:
           description: Unauthorized request
         '404':
           description: Event not found
-
+    
