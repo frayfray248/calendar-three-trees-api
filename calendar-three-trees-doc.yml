@@ -45,7 +45,7 @@ paths:
   /groups/#/events/:
     post:
       summary: Creates a new event
-      description: Creates a new event in a specific group
+      description: Create a new event in a specific group
       requestBody:
         required: true
         content:
@@ -59,3 +59,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
+        '400':
+          description: Bad or malformed request
+        '401':
+          description: Unauthorized request
+  /groups/#/events/#:
+    delete:
+      summary: Delete an event
+      description: Delete an event in a specific group with a specific id
+      responses:
+        '204':
+          description: Successfully deleted event
+        '400':
+          description: Bad or malformed request
+        '401':
+          description: Unauthorized request
+        '404':
+          description: Event not found
