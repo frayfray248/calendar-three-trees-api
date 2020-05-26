@@ -117,4 +117,20 @@ paths:
           description: Unauthorized request
         '404':
           description: Event not found
+    get:
+      summary: Get an event
+      description: Get an event in a specific group with a specific id
+      responses:
+        '200':
+          description: Successfully retrieved an event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          description: Bad or malformed request
+        '401':
+          description: Unauthorized request
+        '404':
+          description: Event not found
 
