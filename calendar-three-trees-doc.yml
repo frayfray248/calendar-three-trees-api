@@ -42,7 +42,15 @@ components:
         - groupId
 
 paths:
-  /groups/#/events/:
+  /groups/{groupId}/events/:
+    parameters:
+      - in: path
+        name: groupId
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: The id of the group
     post:
       summary: Creates a new event
       description: Create a new event in a specific group
@@ -63,7 +71,22 @@ paths:
           description: Bad or malformed request
         '401':
           description: Unauthorized request
-  /groups/#/events/#:
+  /groups/{groupId}/events/{eventId}:
+    parameters:
+      - in: path
+        name: groupId
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: The id of the group
+      - in: path
+        name: eventId
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: The id of the event
     delete:
       summary: Delete an event
       description: Delete an event in a specific group with a specific id
@@ -76,3 +99,22 @@ paths:
           description: Unauthorized request
         '404':
           description: Event not found
+    put:
+      summary: Update an event
+      description: Update an event in a specific group with a specific id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/Event'
+      responses:
+        '204':
+          description: Event successfully updated
+        '400':
+          description: Bad or malformed request
+        '401':
+          description: Unauthorized request
+        '404':
+          description: Event not found
+
