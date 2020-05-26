@@ -9,23 +9,11 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const OAS = YAML.load('./calendar-three-trees-doc.yml');
 
+// routes
+const groupRoutes = require('./api/routes/groups.js');
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(OAS));
 
- app.use((req, res, next) => {
-
-    var connectionStatus;
-
-    database.connect(function(err, connectionStatus) {
-        if (err) {
-            connectionStatus = err.message;
-            console.log(err);
-        }
-        else connectionStatus = "connected to database!";
-      });
-
-    res.status(200).json({
-        message: 'It worked!'
-    });
-});
+app.use('/groups', groupRoutes);
 
 module.exports = app;
