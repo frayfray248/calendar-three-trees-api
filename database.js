@@ -1,11 +1,11 @@
 var mysql = require('mysql');
 
 var database = mysql.createConnection({
-  host: "mysqlcapstone.3treestech.ca",
-  user: "capstonem2020",
-  password: "S54Au*6zskH*9iE",
-  database: "capstonescheduling2020m",
-  port: '3306'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT
 });
 
 module.exports = database;

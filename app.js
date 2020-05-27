@@ -1,7 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
+
+
 
 // routes
 const groupRoutes = require('./api/routes/groups.js');

@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const database = require('../../database');
 
 // add an event 
 router.post('/', (req, res, next) => {
+    
     const event = {
         name: req.body.name,
         tags: req.body.tags,
@@ -11,6 +13,14 @@ router.post('/', (req, res, next) => {
         eventDate: req.body.eventDate,
         dateCreated: req.body.dateCreated
     };
+
+    // database connection
+    const database = require('./database');
+    database.connect((err) => {
+        if (err) throw err;
+        var statement = "INSERT into"
+    });
+
 
     res.status(200).json({
         message: `Handling POST requests to groups/${req.groupId}/events/`,
