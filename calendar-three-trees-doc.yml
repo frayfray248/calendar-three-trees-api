@@ -12,34 +12,36 @@ components:
   schemas:
     Event:
       properties:
-        id:
-          type: integer
         name:
           type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        moreInfoURL:
+          type: string
+          format: uri
+        location:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+            postalCode:
+              type: string
+              maximum: 6
+              minimum: 6
+        organizationId:
+          type: integer
         tags:
           type: array
           items:
             type: string
-        content:
-          type: string
-        moreInfoURL:
-          type: string
-          format: uri
-        contact:
-          type: string
-        eventDate:
-          type: string
-          format: date-time
-        dateCreated:
-          type: string
-          format: date-time
-        groupId:
-          type: integer
       required:
-        - id
         - name
-        - dateCreated
-        - groupId
 
 paths:
   /groups/{groupId}/events/:

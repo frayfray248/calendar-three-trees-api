@@ -15,10 +15,9 @@ router.post('/', (req, res, next) => {
     };
 
     // database connection
-    const database = require('./database');
     database.connect((err) => {
         if (err) throw err;
-        var statement = "INSERT into"
+        else console.log("connected to db");
     });
 
 
