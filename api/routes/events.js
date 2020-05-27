@@ -3,17 +3,24 @@ const router = express.Router();
 
 // add an event 
 router.post('/', (req, res, next) => {
-    const eventId = req.params.eventId;
-    const groupId = req.groupId;
+    const event = {
+        name: req.body.name,
+        tags: req.body.tags,
+        content: req.body.content,
+        moreInfoURL: req.body.moreInfoURL,
+        eventDate: req.body.eventDate,
+        dateCreated: req.body.dateCreated
+    };
 
     res.status(200).json({
-        message: `Handling POST requests to groups/${groupId}/events/`
+        message: `Handling POST requests to groups/${req.groupId}/events/`,
+        event: event
     });
 });
 
 // get all events
 router.get('/', (req, res, next) => {
-    const eventId = req.params.eventId;
+    const eventId = req.params.eventId; 
     const groupId = req.groupId;
 
     res.status(200).json({
