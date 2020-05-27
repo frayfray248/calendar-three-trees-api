@@ -1,31 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const database = require('../../database');
+const EventsController = require('../controllers/EventsController');
 
 // add an event 
-router.post('/', (req, res, next) => {
-    
-    const event = {
-        name: req.body.name,
-        tags: req.body.tags,
-        content: req.body.content,
-        moreInfoURL: req.body.moreInfoURL,
-        eventDate: req.body.eventDate,
-        dateCreated: req.body.dateCreated
-    };
-
-    // database connection
-    database.connect((err) => {
-        if (err) throw err;
-        else console.log("connected to db");
-    });
-
-
-    res.status(200).json({
-        message: `Handling POST requests to groups/${req.groupId}/events/`,
-        event: event
-    });
-});
+router.post('/', EventsController.addEvent);
 
 // get all events
 router.get('/', (req, res, next) => {

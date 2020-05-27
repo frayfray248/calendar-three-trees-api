@@ -1,29 +1,30 @@
+// env config for db
 require('dotenv').config();
+
+// module imports
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-
-
-
-// routes
-const groupRoutes = require('./api/routes/groups.js');
-
-// open api documentation
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
+
+// file imports
 const OAS = YAML.load('./calendar-three-trees-doc.yml');
 
-// using swagger documentation
+// routes imports
+const groupRoutes = require('./api/routes/groups.js');
+
+
+// swagger documentation middleware 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(OAS));
-
-
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extended: false}));
+
+// body parser middleware
 app.use(bodyParser.json());
 
-
-// CORS error handling
+// CORS error handling middleware
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header(
