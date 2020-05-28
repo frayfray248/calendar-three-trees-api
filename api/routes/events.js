@@ -7,14 +7,7 @@ const EventsController = require('../controllers/EventsController');
 router.post('/', EventsController.addEvent);
 
 // get all events
-router.get('/', (req, res, next) => {
-    const eventId = req.params.eventId; 
-    const groupId = req.groupId;
-
-    res.status(200).json({
-        message: `Handling GET requests to groups/${groupId}/events/`
-    });
-});
+router.get('/', EventsController.getEvents);
 
 // delete an event
 router.delete('/:eventId', (req, res, next) => {
