@@ -1,11 +1,17 @@
-var mysql = require('mysql');
+const sequelize = require('sequelize');
 
-var database = mysql.createConnection({
-  host: "mysqlcapstone.3treestech.ca",
-  user: "capstonem2020",
-  password: "S54Au*6zskH*9iE",
-  database: "capstonescheduling2020m",
-  port: '3306'
+const db = new sequelize(process.env.DB_NAME, 
+  process.env.DB_USER, 
+  process.env.DB_PASS, {
+  host: process.env.DB_HOST,
+  dialect: 'mysql',
+
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  }
 });
 
-module.exports = database;
+module.exports = db;
