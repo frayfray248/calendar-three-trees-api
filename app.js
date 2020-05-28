@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 // body parser middleware
 app.use(bodyParser.json());
 
-// CORS error handling middleware
+// CORS handling middleware
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header(
@@ -38,8 +38,14 @@ app.use((req, res, next) => {
     next();
 });
 
-// routes
+
+////////////////
+//// ROUTES ////
+////////////////
+
 app.use('/groups', groupRoutes);
+
+
 
 // error message for all requests that get passed the implemented routes
 app.use((req, res, next) => {

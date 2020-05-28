@@ -10,34 +10,12 @@ router.post('/', EventsController.addEvent);
 router.get('/', EventsController.getEvents);
 
 // delete an event
-router.delete('/:eventId', (req, res, next) => {
-    const eventId = req.params.eventId;
-    const groupId = req.groupId;
-
-    res.status(200).json({
-        message: `Handling DELETE requests to groups/${groupId}/events/${eventId}`
-    });
-});
-
+router.delete('/:eventId', EventsController.deleteEvent);
 
 // put an event (update)
-router.put('/:eventId', (req, res, next) => {
-    const eventId = req.params.eventId;
-    const groupId = req.groupId;
-
-    res.status(200).json({
-        message: `Handling PUT requests to groups/${groupId}/events/${eventId}`
-    });
-});
+router.put('/:eventId', EventsController.updateEvent);
 
 // get an event
-router.get('/:eventId', (req, res, next) => {
-    const eventId = req.params.eventId;
-    const groupId = req.groupId;
-
-    res.status(200).json({
-        message: `Handling PUT requests to groups/${groupId}/events/${eventId}`
-    });
-});
+router.get('/:eventId', EventsController.getEvent);
 
 module.exports = router;
