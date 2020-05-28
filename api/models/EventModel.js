@@ -1,6 +1,6 @@
 const sequelize = require('sequelize');
 const db = require('../../database');
-const { INTEGER, STRING, DATETIME }  = sequelize;
+const { INTEGER, STRING, DATE }  = sequelize;
 
 const Event = db.define('Event', {
     Event_ID: {
@@ -9,6 +9,18 @@ const Event = db.define('Event', {
         autoIncrement: true
     },
     Event_Name: {
+        type: STRING
+    },
+    Event_Content: {
+        type: STRING
+    },
+    Event_Start: {
+        type: DATE
+    },
+    Event_End: {
+        type: Date
+    },
+    Event_MoreInfoURL: {
         type: STRING
     }
 }, {
