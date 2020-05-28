@@ -1,5 +1,6 @@
 const database = require('../../database');
 const Event = require('../models/EventModel');
+const Location = require('../models/LocationModel');
 
 // add a single event 
 exports.addEvent = (req, res, next) => {
@@ -17,11 +18,12 @@ exports.addEvent = (req, res, next) => {
 */
 exports.getEvents = (req, res, next) => {
 
-    Event.findAll()
-        .then(events => {
-            res.status(200).json(events);
-        })
-        .catch(err=> console.log(err));  
+    Promise.all([
+        Event.findAll(),
+        Location.findAll(),
+    ]).then((data) => {
+        res.status(200).json(data);
+    }).catch(err => res.status(500).json(err));
 }
 
 // delete one event by event id and group id
