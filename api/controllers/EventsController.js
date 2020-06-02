@@ -1,6 +1,5 @@
 const database = require('../../database');
 const Event = require('../models/EventModel');
-const Location = require('../models/LocationModel');
 
 // add a single event 
 exports.addEvent = (req, res, next) => {
@@ -18,12 +17,20 @@ exports.addEvent = (req, res, next) => {
 */
 exports.getEvents = (req, res, next) => {
 
-    Promise.all([
-        Event.findAll(),
-        Location.findAll(),
-    ]).then((data) => {
-        res.status(200).json(data);
-    }).catch(err => res.status(500).json(err));
+    const tags = req.query.tags;
+    const dates = req.params.dates;
+    const dateRange = req.params.dateRange;
+    const groupId = req.groupId;
+    
+    Event.search(groupId, tags, dates, dateRange, (err, event) => {
+        if(err) {
+            res.send(err);
+        } else {
+            res.send(event);
+        }
+    });
+
+   
 }
 
 // delete one event by event id and group id
