@@ -6,7 +6,41 @@ const Event = (event) => {
     startDate = event.startDate;
     endDate = event.endDate;
     moreInfoUrl = event.moreInfoUrl;
+    locationId = event.locationId;
+    programId = event.programId;
 }
+
+Event.add = (event, result) => {
+    db.query(
+    `
+    INSERT INTO \`Events\`(
+        \`Event_Name\`,
+        \`Event_Content\`,
+        \`Event_Start\`,
+        \`Event_End\`,
+        \`Event_MoreInfoURL\`,
+        \`Program_ID\`
+    )
+    VALUES(
+        ${event.name},
+        ${event.content},
+        ${event.startDate},
+        ${event.endDate},
+        ${event.moreInfoUrl},
+        ${event.locationId},
+        ${event.programId}
+    )
+    `
+    , (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+        } else {
+            console.log('events: ', res);
+            result(null, res);
+        }
+    });
+};
 
 Event.getAll = (result) => {
     db.query("Select * FROM Events", (err, res) => {
@@ -32,6 +66,9 @@ Event.getAllByGroupId = (groupdId, result) => {
     });
 };
 
+
+// todo:
+// !!database doesn't have event dates!!
 Event.search = (groupdId, tags, dates, dateRange, result) => {
 
     tags = tags.split(",");
@@ -40,7 +77,7 @@ Event.search = (groupdId, tags, dates, dateRange, result) => {
 
     db.query(`
     SELECT
-        e.Event_NAme,
+        e.Event_Name,
         t.Tag_Name
     FROM
         \`Events\` e
@@ -49,6 +86,7 @@ Event.search = (groupdId, tags, dates, dateRange, result) => {
     JOIN Tags t ON
         t.Tag_ID = et.Tag_ID
     WHERE t.Tag_NAME IN (${tags})
+    AND e.Program_ID = ${groupdId}
     ;
     `,
         (err, res) => {

@@ -4,10 +4,16 @@ const Event = require('../models/EventModel');
 // add a single event 
 exports.addEvent = (req, res, next) => {
 
-    res.status(200).json({
-        message: `Handling POST requests to groups/${req.groupId}/events/`,
-        event: event
+    console.log(req.body);
+
+    req.body.programId = req.groupId;
+
+    Event.add(req.body, (err, event) => {
+        if(err) res.send(err);
+        else res.send(event);
     });
+
+    res.status(200).json(req.body);
 };
 
 /*  Get all events
