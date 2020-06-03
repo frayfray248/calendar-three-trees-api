@@ -11,32 +11,26 @@ const Event = (event) => {
 }
 
 Event.add = (event, result) => {
-    db.query(
+
+    const sql = `INSERT INTO Events (Event_Name, Event_Content, Event_Start, Event_End, Event_MoreInfoURL, Location_ID, Program_ID)
+    VALUES(?, ?, ?, ?, ?, ?, ?)
     `
-    INSERT INTO \`Events\`(
-        \`Event_Name\`,
-        \`Event_Content\`,
-        \`Event_Start\`,
-        \`Event_End\`,
-        \`Event_MoreInfoURL\`,
-        \`Program_ID\`
-    )
-    VALUES(
-        ${event.name},
-        ${event.content},
-        ${event.startDate},
-        ${event.endDate},
-        ${event.moreInfoUrl},
-        ${event.locationId},
-        ${event.programId}
-    )
-    `
-    , (err, res) => {
+    const values = [
+        event.name,
+        event.content,
+        event.startDate,
+        event.endDate,
+        event.moreInfoUrl,
+        event.locationId,
+        event.programId
+    ]
+
+    db.query(sql, values, (err, res) => {
         if (err) {
             console.log("error: ", err);
-            result(null, err);
+            result(err, null);
         } else {
-            console.log('events: ', res);
+            console.log("events: ", res);
             result(null, res);
         }
     });
