@@ -7,7 +7,7 @@ exports.addEvent = (req, res, next) => {
     req.body.programId = req.groupId;
 
     Event.add(req.body, (err, event) => {
-        if(err) res.status(400).send("Bad or malformed request");
+        if (err) res.status(400).send("Bad or malformed request");
         else res.status(200).json(JSON.stringify(event));
     });
 };
@@ -19,20 +19,17 @@ exports.addEvent = (req, res, next) => {
 */
 exports.getEvents = (req, res, next) => {
 
-    const tags = req.query.tags;
-    const dates = req.params.dates;
-    const dateRange = req.params.dateRange;
-    const groupId = req.groupId;
-    
-    Event.search(groupId, tags, dates, dateRange, (err, event) => {
-        if(err) {
-            res.send(err);
-        } else {
-            res.send(event);
-        }
-    });
-
-   
+    if (Object.keys(req.query).length === 0) {
+        Event.getAll((err, event) => {
+            if (err) res.status(400).send("Bad or malformed request");
+            else res.status(200).json(event);
+        });
+    } else {
+        Event.search(req.groupId, req.query.tags, req.query.dates, req.query.dateRange, (err, event) => {
+            if (err) res.status(400).send("Bad or malformed request");
+            else res.status(200).json(event);
+        });
+    }
 }
 
 // delete one event by event id and group id

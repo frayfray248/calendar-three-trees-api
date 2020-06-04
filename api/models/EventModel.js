@@ -1,4 +1,5 @@
 const db = require('../../database');
+const mysql = require('mysql');
 
 const Event = (event) => {
     name = event.name;
@@ -64,29 +65,54 @@ Event.getAllByGroupId = (groupdId, result) => {
 // todo:
 // !!database doesn't have event dates!!
 Event.search = (groupdId, tags, dates, dateRange, result) => {
+    
+    var params = [groupdId];
+    console.log(dates);
 
-    tags = tags.split(",");
-    tags = tags.map((a) => { return "'" + a + "'"}).join();
-    console.log(tags);
-
-    db.query(`
+    var statement = `
     SELECT
-        e.Event_Name,
-        t.Tag_Name
+        *
     FROM
         \`Events\` e
     JOIN \`Event Tags\` et ON
         et.Event_ID = e.Event_ID
     JOIN Tags t ON
         t.Tag_ID = et.Tag_ID
-    WHERE t.Tag_NAME IN (${tags})
-    AND e.Program_ID = ${groupdId}
-    ;
-    `,
+    JOIN Locations l ON
+        e.Location_ID = l.Location_ID
+    WHERE e.Program_ID = ? 
+    AND `
+        ;
+    
+    var paramStatements = [];
+
+    if (tags != null) {
+        paramStatements.push(`t.Tag_Name IN (?) `);
+        params.push(tags.split(","));
+    }
+
+    if (dates != null) {
+        paramStatements.push(`e.Event_Start IN (?)`);
+        params.push(dates.split(","));
+    }
+
+    if (paramStatements.length > 1) {
+        statement += paramStatements.join(" AND ");
+    } else {
+        statement += paramStatements;
+    }    
+    
+    statement += ";";
+    
+    console.log(statement);
+    
+    const query = mysql.format(statement, params);
+
+    db.query(query,
         (err, res) => {
             if (err) {
                 console.log("error: ", err);
-                result(null, err);
+                result(err, null);
             } else {
                 console.log('events: ', res);
                 result(null, res);

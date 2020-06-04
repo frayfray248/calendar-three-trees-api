@@ -26,6 +26,8 @@ components:
         location:
           type: object
           properties:
+            locationId:
+              type: integer
             name:
               type: string
             address:
@@ -80,9 +82,21 @@ paths:
         - in: query
           name: tags
           schema:
-            type: array
-            items:
-              type: string
+            properties:
+              tags:
+                type: array
+                items:
+                  type: string
+              tagCompare:
+                type: string
+                pattern: '^all$'
+          examples:
+            all:
+              value: tagSearch={tagCompare=all,tags=[tag1,tag2,tag3]}
+              summary: match all tags
+            any:
+              value: tagSearch={tagCompare=any,tags=[tag1,tag2,tag3]}
+              summary: match any tags  
           description: The tags to be used to filter the events
         - in: query
           name: dates
