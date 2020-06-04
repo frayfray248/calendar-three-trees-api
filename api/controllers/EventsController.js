@@ -4,7 +4,8 @@ const Event = require('../models/EventModel');
 // add a single event 
 exports.addEvent = (req, res, next) => {
 
-    req.body.programId = req.groupId;
+    // getting program id
+    const programId = req.groupId;
 
     Event.add(req.body, (err, event) => {
         if (err) res.status(400).send("Bad or malformed request");

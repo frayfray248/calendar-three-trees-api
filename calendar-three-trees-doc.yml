@@ -10,19 +10,22 @@ servers:
 
 components:
   schemas:
-    Event:
+    EventContent:
       properties:
-        name:
-          type: string
-        startDate:
-          type: string
-          format: date-time
-        endDate:
-          type: string
-          format: date-time
-        moreInfoURL:
-          type: string
-          format: uri
+        event:
+          type: object
+          properties:
+            name:
+              type: string
+            startDate:
+              type: string
+              format: date-time
+            endDate:
+              type: string
+              format: date-time
+            moreInfoURL:
+              type: string
+              format: uri
         location:
           type: object
           properties:
@@ -63,14 +66,14 @@ paths:
         content:
           application/json:
             schema: 
-              $ref: '#/components/schemas/Event'
+              $ref: '#/components/schemas/EventContent'
       responses:
         '201':
           description: Returns the created event in a specific group
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Event'
+                $ref: '#/components/schemas/EventContent'
         '400':
           description: Bad or malformed request
         '401':
@@ -129,7 +132,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Event'
+                  $ref: '#/components/schemas/EventContent'
         '400':
           description: Bad or malformed request
         '401':
@@ -172,7 +175,7 @@ paths:
         content:
           application/json:
             schema: 
-              $ref: '#/components/schemas/Event'
+              $ref: '#/components/schemas/EventContent'
       responses:
         '204':
           description: Event successfully updated
@@ -191,7 +194,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Event'
+                $ref: '#/components/schemas/EventContent'
         '400':
           description: Bad or malformed request
         '401':

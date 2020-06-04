@@ -1,40 +1,54 @@
 const db = require('../../database');
 const mysql = require('mysql');
 
-const Event = (event) => {
-    name = event.name;
-    content = event.content;
-    startDate = event.startDate;
-    endDate = event.endDate;
-    moreInfoUrl = event.moreInfoUrl;
-    locationId = event.locationId;
-    programId = event.programId;
-}
+
+const Event = function(event) {
+    this.name = event.name;
+    this.content = event.content;
+    this.startDate = event.startDate;
+    this.endDate = event.endDate;
+    this.moreInfoUrl = event.moreInfoUrl;
+    this.location = new Location(event.location);
+    this.organizationId = event.organizationId;
+    this.tags = event.tags;
+};
+
+const Location = function(location) {
+    this.locationId = location.locationId;
+    this.name = location.name;
+    this.address = location.address;
+    this.postalCode = location.postalCode;
+};
 
 Event.add = (event, result) => {
 
-    const sql = `INSERT INTO Events (Event_Name, Event_Content, Event_Start, Event_End, Event_MoreInfoURL, Location_ID, Program_ID)
-    VALUES(?, ?, ?, ?, ?, ?, ?)
-    `
-    const values = [
-        event.name,
-        event.content,
-        event.startDate,
-        event.endDate,
-        event.moreInfoUrl,
-        event.locationId,
-        event.programId
-    ]
+    const newEvent = new Event(event);
 
-    db.query(sql, values, (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(err, null);
-        } else {
-            console.log("events: ", res);
-            result(null, res);
-        }
-    });
+    console.log(newEvent);
+    result(null, event);
+
+    // const sql = `INSERT INTO Events (Event_Name, Event_Content, Event_Start, Event_End, Event_MoreInfoURL, Location_ID, Program_ID)
+    // VALUES(?, ?, ?, ?, ?, ?, ?)
+    // `
+    // const values = [
+    //     event.name,
+    //     event.content,
+    //     event.startDate,
+    //     event.endDate,
+    //     event.moreInfoUrl,
+    //     event.locationId,
+    //     event.programId
+    // ]
+
+    // db.query(sql, values, (err, res) => {
+    //     if (err) {
+    //         console.log("error: ", err);
+    //         result(err, null);
+    //     } else {
+    //         console.log("events: ", res);
+    //         result(null, res);
+    //     }
+    // });
 };
 
 Event.getAll = (result) => {
