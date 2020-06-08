@@ -1,13 +1,10 @@
 const database = require('../../database');
-const Event = require('../models/EventModel');
+const EventContent = require('../models/EventContent');
 
 // add a single event 
 exports.addEvent = (req, res, next) => {
 
-    // getting program id
-    const programId = req.groupId;
-
-    Event.add(req.body, (err, event) => {
+    EventContent.add(req.body, req.groupId, (err, event) => {
         if (err) res.status(400).send("Bad or malformed request");
         else res.status(200).json(JSON.stringify(event));
     });
@@ -21,12 +18,12 @@ exports.addEvent = (req, res, next) => {
 exports.getEvents = (req, res, next) => {
 
     if (Object.keys(req.query).length === 0) {
-        Event.getAll((err, event) => {
+        EventContent.getAll((err, event) => {
             if (err) res.status(400).send("Bad or malformed request");
             else res.status(200).json(event);
         });
     } else {
-        Event.search(req.groupId, req.query.tags, req.query.dates, req.query.dateRange, (err, event) => {
+        Eventt.search(req.groupId, req.query.tags, req.query.dates, req.query.dateRange, (err, event) => {
             if (err) res.status(400).send("Bad or malformed request");
             else res.status(200).json(event);
         });
