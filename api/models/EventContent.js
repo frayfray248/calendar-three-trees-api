@@ -10,11 +10,13 @@ const EventContent = function (eventContent) {
 };
 
 EventContent.add = (eventContent, programId, result) => {
-    try {
+
     const newEvent = new Event(eventContent.event);
     const newLocation = new Location(eventContent.location);
+    const newTags = eventContent.tags.map(tag => new Tag({ name: tag }));
 
-    const sql = `
+    // partial sql statement for adding the event and location
+    const eventLocationsSql = `
     BEGIN;
 
     INSERT INTO \`Locations\` (\`Location_ID\`, \`Location_Name\`, \`Location_Address\`, \`Location_PostCode\`) 
@@ -26,16 +28,26 @@ EventContent.add = (eventContent, programId, result) => {
     VALUES (NULL, ?, ?, ?, ?, ?, @location_id, ?);
 
     SET @event_id = LAST_INSERT_ID();
+    `
 
+    // partial sql statement for adding tags
+    const tagsSql = `
     INSERT INTO \`Tags\` (\`Tag_ID\`, \`Tag_Name\`) VALUES (NULL, ?);
 
     SET @tag_id = LAST_INSERT_ID();
 
     INSERT INTO \`Event Tags\` (\`Event_ID\`, \`Tag_ID\`) VALUES (@event_id, @tag_id);
+    `.repeat(newTags.length);
 
+    // ending sql
+    const commitSql = `
     COMMIT;
     `
 
+    // combining all partial sql statements
+    const sql = eventLocationsSql + tagsSql + commitSql;
+
+    // sql placeholder values
     const values = [
         newLocation.name,
         newLocation.address,
@@ -45,10 +57,11 @@ EventContent.add = (eventContent, programId, result) => {
         newEvent.startDate,
         newEvent.endDate,
         newEvent.moreInfoUrl,
-        programId.toString(),
-        eventContent.tags[0]
-    ];
+        programId.toString()
+    ]
+        .concat(newTags.map(tag => (tag.name)));
 
+    // run sql
     db.query(sql, values, (err, res) => {
         if (err) {
             console.log("error: ", err);
@@ -58,44 +71,41 @@ EventContent.add = (eventContent, programId, result) => {
             result(null, res);
         }
     });
-} catch(e) {
-    console.log("SERVER ERROR: ", e);
-}
 }
 
-EventContent.getAll = (result) => {
-    db.query("Select * FROM Events", (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(err, null);
-        } else {
-            console.log('events: ', res);
-            result(null, res);
-        }
-    });
-};
+    EventContent.getAll = (result) => {
+        db.query("Select * FROM Events", (err, res) => {
+            if (err) {
+                console.log("error: ", err);
+                result(err, null);
+            } else {
+                console.log('events: ', res);
+                result(null, res);
+            }
+        });
+    };
 
-EventContent.getAllByGroupId = (groupdId, result) => {
-    db.query(`Select * FROM Events WHERE Program_ID = ${groupdId}`, (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(null, err);
-        } else {
-            console.log('events: ', res);
-            result(null, res);
-        }
-    });
-};
+    EventContent.getAllByGroupId = (groupdId, result) => {
+        db.query(`Select * FROM Events WHERE Program_ID = ${groupdId}`, (err, res) => {
+            if (err) {
+                console.log("error: ", err);
+                result(null, err);
+            } else {
+                console.log('events: ', res);
+                result(null, res);
+            }
+        });
+    };
 
 
-// todo:
-// !!database doesn't have event dates!!
-EventContent.search = (groupdId, tags, dates, dateRange, result) => {
+    // todo:
+    // !!database doesn't have event dates!!
+    EventContent.search = (groupdId, tags, dates, dateRange, result) => {
 
-    var params = [groupdId];
-    console.log(dates);
+        var params = [groupdId];
+        console.log(dates);
 
-    var statement = `
+        var statement = `
     SELECT
         *
     FROM
@@ -108,42 +118,42 @@ EventContent.search = (groupdId, tags, dates, dateRange, result) => {
         e.Location_ID = l.Location_ID
     WHERE e.Program_ID = ? 
     AND `
-        ;
+            ;
 
-    var paramStatements = [];
+        var paramStatements = [];
 
-    if (tags != null) {
-        paramStatements.push(`t.Tag_Name IN (?) `);
-        params.push(tags.split(","));
-    }
+        if (tags != null) {
+            paramStatements.push(`t.Tag_Name IN (?) `);
+            params.push(tags.split(","));
+        }
 
-    if (dates != null) {
-        paramStatements.push(`e.Event_Start IN (?)`);
-        params.push(dates.split(","));
-    }
+        if (dates != null) {
+            paramStatements.push(`e.Event_Start IN (?)`);
+            params.push(dates.split(","));
+        }
 
-    if (paramStatements.length > 1) {
-        statement += paramStatements.join(" AND ");
-    } else {
-        statement += paramStatements;
-    }
+        if (paramStatements.length > 1) {
+            statement += paramStatements.join(" AND ");
+        } else {
+            statement += paramStatements;
+        }
 
-    statement += ";";
+        statement += ";";
 
-    console.log(statement);
+        console.log(statement);
 
-    const query = mysql.format(statement, params);
+        const query = mysql.format(statement, params);
 
-    db.query(query,
-        (err, res) => {
-            if (err) {
-                console.log("error: ", err);
-                result(err, null);
-            } else {
-                console.log('events: ', res);
-                result(null, res);
-            }
-        });
-};
+        db.query(query,
+            (err, res) => {
+                if (err) {
+                    console.log("error: ", err);
+                    result(err, null);
+                } else {
+                    console.log('events: ', res);
+                    result(null, res);
+                }
+            });
+    };
 
-module.exports = EventContent;
+    module.exports = EventContent;
