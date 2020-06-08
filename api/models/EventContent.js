@@ -2,6 +2,7 @@ const db = require('../../database');
 const mysql = require('mysql');
 const Event = require('./EventModel');
 const Location = require('./LocationModel');
+const Tag = require('./../models/TagModel');
 
 const EventContent = function (eventContent) {
     this.event = new Event(eventContent.event);
@@ -9,7 +10,7 @@ const EventContent = function (eventContent) {
 };
 
 EventContent.add = (eventContent, programId, result) => {
-
+    try {
     const newEvent = new Event(eventContent.event);
     const newLocation = new Location(eventContent.location);
 
@@ -19,8 +20,18 @@ EventContent.add = (eventContent, programId, result) => {
     INSERT INTO \`Locations\` (\`Location_ID\`, \`Location_Name\`, \`Location_Address\`, \`Location_PostCode\`) 
     VALUES (NULL, ?, ?, ?);
 
+    SET @location_id = LAST_INSERT_ID();
+
     INSERT INTO \`Events\` (\`Event_ID\`, \`Event_Name\`, \`Event_Content\`, \`Event_Start\`, \`Event_End\`, \`Event_MoreInfoURL\`, \`Location_ID\`, \`Program_ID\`) 
-    VALUES (NULL, ?, ?, ?, ?, ?, LAST_INSERT_ID(), '2');
+    VALUES (NULL, ?, ?, ?, ?, ?, @location_id, ?);
+
+    SET @event_id = LAST_INSERT_ID();
+
+    INSERT INTO \`Tags\` (\`Tag_ID\`, \`Tag_Name\`) VALUES (NULL, ?);
+
+    SET @tag_id = LAST_INSERT_ID();
+
+    INSERT INTO \`Event Tags\` (\`Event_ID\`, \`Tag_ID\`) VALUES (@event_id, @tag_id);
 
     COMMIT;
     `
@@ -33,7 +44,9 @@ EventContent.add = (eventContent, programId, result) => {
         newEvent.content,
         newEvent.startDate,
         newEvent.endDate,
-        newEvent.moreInfoUrl
+        newEvent.moreInfoUrl,
+        programId.toString(),
+        eventContent.tags[0]
     ];
 
     db.query(sql, values, (err, res) => {
@@ -45,6 +58,9 @@ EventContent.add = (eventContent, programId, result) => {
             result(null, res);
         }
     });
+} catch(e) {
+    console.log("SERVER ERROR: ", e);
+}
 }
 
 EventContent.getAll = (result) => {
