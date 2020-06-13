@@ -11,62 +11,62 @@ const EventContent = function (eventContent) {
 
 EventContent.add = (eventContent, programId, result) => {
     try {
-    const newEvent = new Event(eventContent.event);
-    const newLocation = new Location(eventContent.location);
-    const newTags = eventContent.tags.map(tag => new Tag({ name: tag }));
+        const newEvent = new Event(eventContent.event);
+        const newLocation = new Location(eventContent.location);
+        const newTags = eventContent.tags.map(tag => new Tag({ name: tag }));
 
-    var values = [];
-    var locationSql = ``;
-    console.log("LOCATION ID = ", eventContent.location.locationId);
+        var values = [];
+        var locationSql = ``;
+        console.log("LOCATION ID = ", eventContent.location.locationId);
 
-    // partial sql statement for adding the location
-    if (eventContent.location.locationId > 0) {
-        locationSql = `SET @location_id = ?;`;
+        // partial sql statement for adding the location
+        if (eventContent.location.locationId > 0) {
+            locationSql = `SET @location_id = ?;`;
 
-        values = [
-            eventContent.location.locationId.toString(),
-            newEvent.name,
-            newEvent.content,
-            newEvent.startDate,
-            newEvent.endDate,
-            newEvent.moreInfoUrl,
-            programId.toString()
-        ]
-            .concat(newTags.map(tag => (tag.name)));
+            values = [
+                eventContent.location.locationId.toString(),
+                newEvent.name,
+                newEvent.content,
+                newEvent.startDate,
+                newEvent.endDate,
+                newEvent.moreInfoUrl,
+                programId.toString()
+            ]
+                .concat(newTags.map(tag => (tag.name)));
 
-    } else {
-        locationSql = `
+        } else {
+            locationSql = `
         INSERT INTO \`Locations\` (\`Location_ID\`, \`Location_Name\`, \`Location_Address\`, \`Location_PostCode\`) 
         VALUES (NULL, ?, ?, ?);
 
         SET @location_id = LAST_INSERT_ID();
         `;
 
-        // sql placeholder values
-    values = [
-        newLocation.name,
-        newLocation.address,
-        newLocation.postalCode,
-        newEvent.name,
-        newEvent.content,
-        newEvent.startDate,
-        newEvent.endDate,
-        newEvent.moreInfoUrl,
-        programId.toString()
-    ]
-        .concat(newTags.map(tag => (tag.name)));
-    }
+            // sql placeholder values
+            values = [
+                newLocation.name,
+                newLocation.address,
+                newLocation.postalCode,
+                newEvent.name,
+                newEvent.content,
+                newEvent.startDate,
+                newEvent.endDate,
+                newEvent.moreInfoUrl,
+                programId.toString()
+            ]
+                .concat(newTags.map(tag => (tag.name)));
+        }
 
-    // partial sql statement for adding the event and location
-    const eventSql = `
+        // partial sql statement for adding the event
+        const eventSql = `
     INSERT INTO \`Events\` (\`Event_ID\`, \`Event_Name\`, \`Event_Content\`, \`Event_Start\`, \`Event_End\`, \`Event_MoreInfoURL\`, \`Location_ID\`, \`Program_ID\`) 
     VALUES (NULL, ?, ?, ?, ?, ?, @location_id, ?);
 
     SET @event_id = LAST_INSERT_ID();
     `
 
-    // partial sql statement for adding tags
-    const tagsSql = `
+        // partial sql statement for adding tags
+        const tagsSql = `
 
     SET @tagName = ?;
 
@@ -81,23 +81,49 @@ EventContent.add = (eventContent, programId, result) => {
     INSERT INTO \`Event Tags\` (\`Event_ID\`, \`Tag_ID\`) VALUES (@event_id, @tag_id);
     `.repeat(newTags.length);
 
-    // combining all partial sql statements
-    const sql = `BEGIN; ` + locationSql + eventSql + tagsSql + `COMMIT;`;
+        // combining all partial sql statements
+        const sql = `BEGIN; ` + locationSql + eventSql + tagsSql + `COMMIT;`;
 
-    // run sql
+        // run sql
+        db.query(sql, values, (err, res) => {
+            if (err) {
+                console.log("error: ", err);
+                result(err, null);
+            } else {
+                console.log("events: ", res);
+                result(null, res);
+            }
+        });
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+EventContent.removeById = (id, result) => {
+    const deleteEventTagsSql = `
+    DELETE FROM \`Event Tags\` WHERE \`Event Tags\`.\`Event_ID\` = ?;
+    `;
+    const deleteEventSql = `
+    DELETE FROM \`Events\` WHERE \`Events\`.\`Event_ID\` = ?;
+    `
+    values = [
+        id,
+        id
+    ];
+
+    const sql = `BEGIN;` + deleteEventTagsSql + deleteEventSql + `COMMIT;`;
+
     db.query(sql, values, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
-        } else {
+        }
+        else {
             console.log("events: ", res);
             result(null, res);
         }
     });
-} catch(e) {
-    console.log(e);
-}
-}
+};
 
 EventContent.getAll = (result) => {
     db.query("Select * FROM Events", (err, res) => {

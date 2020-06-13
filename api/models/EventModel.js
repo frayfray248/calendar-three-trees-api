@@ -9,12 +9,10 @@ const Event = function (event) {
     this.moreInfoUrl = event.moreInfoUrl;
 };
 
-Event.add = (event, result) => {
-
-}
-
-Event.addLocation = (event, location) => {
-    event.locationId = location.locationId;
+Event.validate = (event) => {
+    return new Promise((resolve, reject) => {
+        
+    });
 };
 
 module.exports = Event;

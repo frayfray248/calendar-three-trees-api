@@ -23,7 +23,7 @@ exports.getEvents = (req, res, next) => {
             else res.status(200).json(event);
         });
     } else {
-        Eventt.search(req.groupId, req.query.tags, req.query.dates, req.query.dateRange, (err, event) => {
+        Event.search(req.groupId, req.query.tags, req.query.dates, req.query.dateRange, (err, event) => {
             if (err) res.status(400).send("Bad or malformed request");
             else res.status(200).json(event);
         });
@@ -32,10 +32,11 @@ exports.getEvents = (req, res, next) => {
 
 // delete one event by event id and group id
 exports.deleteEvent = (req, res, next) => {
-
-    res.status(200).json({
-        message: `Handling DELETE requests to groups/${req.groupId}/events/${req.params.eventId}`
-    });
+    console.log("EVENT ID: ", req.params.eventId);
+     EventContent.removeById(req.params.eventId, (err, result) => {
+         if(err) res.status(400).send("Bad or malformed request");
+         else res.status(204).send("Successful Delete");
+     });
 }
 
 // update an event with a new event
