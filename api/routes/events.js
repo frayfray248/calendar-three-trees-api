@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const database = require('../../database');
 const EventsController = require('../controllers/EventsController');
 
 // add an event 
