@@ -1,6 +1,6 @@
 {
   "name": "calendar-api",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "description": "a node.js RESTful API for Three Trees Calendar WordPress plugin",
   "main": "index.js",
   "scripts": {
