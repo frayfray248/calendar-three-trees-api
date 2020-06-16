@@ -6,6 +6,10 @@ const { Event, Location, Tag, EventTag, EventLocation, LocationEvents, EventTags
 // add a single event 
 exports.addEvent = (req, res, next) => {
     (async () => {
+
+        // begining transaction
+        const transaction = await db.transaction();
+
         try {
 
             const locationId = req.body.location.locationId;
@@ -32,7 +36,6 @@ exports.addEvent = (req, res, next) => {
             const savedEvent = await newEvent.save();
 
             // create tags
-
             const savedTags = await Promise.all(req.body.tags.map(async (tag) => {
                 const savedTag = await Tag.findOrCreate({ where: { name: tag } });
                 await EventTag.create({ eventId: savedEvent.id, tagId: savedTag[0].id }, { fields: ['eventId', 'tagId'] })
@@ -42,6 +45,9 @@ exports.addEvent = (req, res, next) => {
                 return savedTag[0].name;
             }));
 
+            //commit transaction
+            await transaction.commit();
+
             // send response
             await res.status(201).send({
                 event: savedEvent,
@@ -50,8 +56,12 @@ exports.addEvent = (req, res, next) => {
             });
 
         } catch (err) {
-            console.log(err);
-            await res.status(500).send(JSON.stringify(err));
+
+            // roll back transaction
+            await transaction.rollback();
+
+            
+            await res.status(500).send('Internal server error');
         }
     })();
 };
