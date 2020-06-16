@@ -1,59 +1,132 @@
-const database = require('../../database');
-const EventContent = require('../models/EventContent');
+const db = require('../../database');
+const Sequelize = require('sequelize');
+const { Event, Location, Tag, EventTag, EventLocation, LocationEvents, EventTags, TagEvents } = require('../models/Models');
+
 
 // add a single event 
 exports.addEvent = (req, res, next) => {
+    (async () => {
+        try {
 
-    EventContent.add(req.body, req.groupId, (err, event) => {
-        if (err) res.status(400).send("Bad or malformed request");
-        else res.status(200).json(JSON.stringify(event));
-    });
+            const locationId = req.body.location.locationId;
+
+            //save or retrieve location
+            const savedLocation = await (async (locationId) => {
+                if (locationId > 0) {
+                    return await Location.findByPk(locationId);
+                } else {
+                    const newLocation = Location.build(
+                        { ...req.body.location });
+                    return await newLocation.save();
+                }
+            })(locationId);
+
+            //create event
+            const newEvent = Event.build(
+                {
+                    ...req.body.event,
+                    programId: req.groupId,
+                    locationId: savedLocation.id
+                });
+
+            const savedEvent = await newEvent.save();
+
+            // create tags
+
+            const savedTags = await Promise.all(req.body.tags.map(async (tag) => {
+                const savedTag = await Tag.findOrCreate({ where: { name: tag } });
+                await EventTag.create({ eventId: savedEvent.id, tagId: savedTag[0].id }, { fields: ['eventId', 'tagId'] })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+                return savedTag[0].name;
+            }));
+
+            // send response
+            await res.status(201).send({
+                event: savedEvent,
+                location: savedLocation,
+                tags: savedTags
+            });
+
+        } catch (err) {
+            console.log(err);
+            await res.status(500).send(JSON.stringify(err));
+        }
+    })();
 };
 
-/*  Get all events
-*   todo: 
-*       - add search functionality
-*       - retrieve location and organization info
-*/
+//get all events
 exports.getEvents = (req, res, next) => {
+    (async () => {
+        const events = Event.findAll();
 
-    if (Object.keys(req.query).length === 0) {
-        EventContent.getAll((err, event) => {
-            if (err) res.status(400).send("Bad or malformed request");
-            else res.status(200).json(event);
+        events.foreach(event => {
+
         });
-    } else {
-        Eventt.search(req.groupId, req.query.tags, req.query.dates, req.query.dateRange, (err, event) => {
-            if (err) res.status(400).send("Bad or malformed request");
-            else res.status(200).json(event);
-        });
-    }
+
+    })();
 }
 
 // delete one event by event id and group id
 exports.deleteEvent = (req, res, next) => {
+    (async () => {
 
-    res.status(200).json({
-        message: `Handling DELETE requests to groups/${req.groupId}/events/${req.params.eventId}`
-    });
+        // begining transaction
+        const transaction = await db.transaction();
+
+        try {
+
+            // getting event to be deleted
+            const event = await Event.findByPk(req.params.eventId);
+
+            // throw error if not found
+            if (!event) throw new Error('event not found');
+
+            // finding eventTags related to event (if any)
+            const eventTags = await EventTag.findAll({
+                where: {
+                    eventId: event.id,
+                }
+            });
+
+            // deleting eventTags related to event (if any)
+            for (var i = 0; i < eventTags.length; i++) {
+                await eventTags[i].destroy();
+            }
+
+            // deleting event
+            await event.destroy();
+
+            //commit transaction
+            await transaction.commit();
+
+            res.status(204).send('Successful delete');
+        } catch (err) {
+
+            // roll back transaction
+            await transaction.rollback();
+
+            // event not found response
+            if (err.message === 'event not found') {
+                res.status(404).send('event not found');
+            }
+            // server error response
+            else res.status(500).send('Internal server error');
+        }
+    })();
 }
 
 // update an event with a new event
 exports.updateEvent = (req, res, next) => {
-    const eventId = req.params.eventId;
-    const groupId = req.groupId;
+    (async () => {
 
-    res.status(200).json({
-        message: `Handling PUT requests to groups/${groupId}/events/${eventId}`
-    });
+    })();
 }
 
 // get a single event by event id and group id
 exports.getEvent = (req, res, next) => {
-    const eventId = req.params.eventId;
-    const groupId = req.groupId;
+    (async () => {
 
-    res.status(200).json({
-        message: `Handling PUT requests to groups/${groupId}/events/${eventId}`
-    });
+    })();
 }

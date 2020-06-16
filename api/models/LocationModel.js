@@ -1,35 +1,39 @@
+const Sequelize = require('sequelize');
+const DataTypes = Sequelize.DataTypes;
+const { STRING, INTEGER, DATE } = DataTypes;
 const db = require('../../database');
-const mysql = require('mysql');
+const Event = require('../models/EventModel');
 
-const Location = function (location) {
-    this.name = location.name,
-    this.address = location.address,
-    this.postalCode = location.postalCode
-};
-
-Location.add = (location, result) => {
-    const sql = `
-        INSERT INTO Locations (
-        Location_Name,
-        Location_Address,
-        Location_PostCode)
-     VALUES(?, ?, ?); 
-     `
-    var values = [
-        location.name,
-        location.address,
-        location.postalCode
-    ];
-
-    db.query(sql, values, (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(err, null);
-        } else {
-            console.log("events: ", res);
-            result(null, res);
-        }
+const Location = db.define('Location', {
+    id: {
+        type: INTEGER(11),
+        allowNull: false,
+        field: 'Location_ID',
+        primaryKey: true,
+        autoIncrement: true
+    },
+    name: {
+        type: STRING(60),
+        allowNull: false,
+        field: 'Location_Name'
+    },
+    address: {
+        type: STRING(60),
+        allowNull: false,
+        field: 'Location_Address'
+    },
+    postalCode: {
+        type: STRING(6),
+        allowNull: false,
+        field: 'Location_PostCode'
+    },
+},
+    {
+        tableName: 'Locations',
+        timestamps: false
     });
-};
+
+    
+
 
 module.exports = Location;
