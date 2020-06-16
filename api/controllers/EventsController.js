@@ -1,5 +1,7 @@
-const database = require('../../database');
-const { Event, Location, Tag, EventTag, EventLocation, LocationEvents } = require('../models/Models');
+const db = require('../../database');
+const Sequelize = require('sequelize');
+const { Event, Location, Tag, EventTag, EventLocation, LocationEvents, EventTags, TagEvents } = require('../models/Models');
+
 
 // add a single event 
 exports.addEvent = (req, res, next) => {
@@ -70,6 +72,48 @@ exports.getEvents = (req, res, next) => {
 exports.deleteEvent = (req, res, next) => {
     (async () => {
 
+        // begining transaction
+        const transaction = await db.transaction();
+
+        try {
+
+            // getting event to be deleted
+            const event = await Event.findByPk(req.params.eventId);
+
+            // throw error if not found
+            if (!event) throw new Error('event not found');
+
+            // finding eventTags related to event (if any)
+            const eventTags = await EventTag.findAll({
+                where: {
+                    eventId: event.id,
+                }
+            });
+
+            // deleting eventTags related to event (if any)
+            for (var i = 0; i < eventTags.length; i++) {
+                await eventTags[i].destroy();
+            }
+
+            // deleting event
+            await event.destroy();
+
+            //commit transaction
+            await transaction.commit();
+
+            res.status(204).send('Successful delete');
+        } catch (err) {
+
+            // roll back transaction
+            await transaction.rollback();
+
+            // event not found response
+            if (err.message === 'event not found') {
+                res.status(404).send('event not found');
+            }
+            // server error response
+            else res.status(500).send('Internal server error');
+        }
     })();
 }
 
