@@ -1,5 +1,6 @@
 const db = require('../../database');
 const Sequelize = require('sequelize');
+const { Op } = Sequelize;
 const { Event, Location, Tag, EventTag, EventLocation, LocationEvents, EventTags, TagEvents } = require('../models/Models');
 
 
@@ -60,7 +61,7 @@ exports.addEvent = (req, res, next) => {
             // roll back transaction
             await transaction.rollback();
 
-            
+
             await res.status(500).send('Internal server error');
         }
     })();
@@ -69,12 +70,127 @@ exports.addEvent = (req, res, next) => {
 //get all events
 exports.getEvents = (req, res, next) => {
     (async () => {
-        const events = Event.findAll();
 
-        events.foreach(event => {
+        // begining transaction
+        const transaction = await db.transaction();
 
-        });
+        try {
 
+            // building sequelize query where option to search tag names
+            const tagsWhereOption = ((ts) => {
+                if (!ts) return {};
+                try {
+                    return { where: { name: JSON.parse(ts) } };
+                } catch (err) {
+                    throw new Error('bad query');
+                }
+            })(req.query.tagSearch);
+
+            // building sequelize query where option to search event content
+            const contentTermsWhereOption = ((c) => {
+                if (!c) return {};
+                try {
+                    return { content: {[Op.substring]: JSON.parse(c)} };
+                } catch (err) {
+                    throw new Error('bad query');
+                }
+            })(req.query.contentSearchTerms);
+
+            // building sequelize query where option to search for events with dates between
+            // two dates
+            const dateRangeWhereOption = ((dr) => {
+                if(!dr) return {};
+                try {
+                    return { [Op.or]: {
+                        startDate: {[Op.between]: [JSON.parse(dr)[0], JSON.parse(dr)[1]]},
+                        endDate: {[Op.between]: [JSON.parse(dr)[0], JSON.parse(dr)[1]]}
+                    }}
+                } catch(err) {
+                    throw new Error('bad query')
+                }
+            })(req.query.dateRange);
+
+            // building sequelize query where option to search for events with dates matching 
+            // any date in an array of dates
+            const datesWhereOption = ((d) => {
+                if(!d) return {};
+                try {
+                    return { [Op.or]: {
+                        startDate: JSON.parse(d),
+                        endDate: JSON.parse(d),
+                    }}
+                } catch(err) {
+                    throw new Error('bad query')
+                }
+            })(req.query.dates);
+           
+            const events = await Event.findAll({
+                where: {
+                    programId: req.groupId,
+                    ...contentTermsWhereOption,
+                    ...dateRangeWhereOption,
+                    ...datesWhereOption
+                },
+                include: [
+                    {
+                        model: Location,
+                        as: 'location'
+                    },
+                    {
+                        model: Tag,
+                        as: 'tags',
+                        ...tagsWhereOption
+                    }
+                ]
+            });
+
+            // throw error if not found
+            if (!events || events.length <= 0) throw new Error('events not found');
+
+            const formatedEvents = events.map((event) => {
+
+                return {
+                    event: {
+                        id: event.id,
+                        name: event.name,
+                        content: event.content,
+                        startDate: event.startDate,
+                        endDate: event.endDate,
+                        moreInfoUrl: event.moreInfoUrl
+                    },
+                    location: {
+                        locationId: event.location.id,
+                        name: event.location.name,
+                        address: event.location.address,
+                        postalCode: event.location.postalCode
+                    },
+                    tags: event.tags.map(tag => tag.name)
+                }
+            });
+
+            //commit transaction
+            await transaction.commit();
+
+            await res.status(200).send({
+                events: formatedEvents
+            });
+
+        } catch (err) {
+
+            await transaction.rollback();
+
+            // event not found response
+            if (err.message === 'events not found') {
+                res.status(404).send('events not found');
+            } else if (err.message === 'bad query') {
+                res.status(400).send('bad query');
+            }
+            else {
+                await res.status(500).send('Internal server error');
+            }
+            console.log(err);
+
+        }
     })();
 }
 
