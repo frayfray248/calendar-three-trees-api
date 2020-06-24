@@ -1,7 +1,7 @@
 const db = require('../../database');
 const Sequelize = require('sequelize');
-const { Op } = Sequelize;
-const { Event, Location, Tag, EventTag, EventLocation, LocationEvents, EventTags, TagEvents } = require('../models/Models');
+const { Op, ValidationError } = Sequelize;
+const { Event, Location, Tag, EventTag} = require('../models/Models');
 
 
 // add a single event 
@@ -61,8 +61,13 @@ exports.addEvent = (req, res, next) => {
             // roll back transaction
             await transaction.rollback();
 
+            console.log(err);
 
-            await res.status(500).send('Internal server error');
+            if (err instanceof ValidationError) {
+                await res.status(400).send('Bad or malformed request');
+            } else {
+                await res.status(500).send('Internal server error');
+            }
         }
     })();
 };

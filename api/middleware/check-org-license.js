@@ -10,9 +10,11 @@ will proceed to the endpoints.
 module.exports = (req, res, next) => {
     (async () => {
         try {
+            const licenseKey = req.headers.licensekey;
 
+            if (!licenseKey) throw new Error('No license');
             // finding an organization with a matching licensekey
-            const org = await Organization.findOne({ where: { licenseKey: req.headers.licensekey } });
+            const org = await Organization.findOne({ where: { licenseKey: licenseKey } });
 
             // if an organization was found, proceed to the endpoints. Else, throw an error
             if (!org) {
@@ -27,6 +29,8 @@ module.exports = (req, res, next) => {
             // invalid message error
             if (err.message === 'Invalid license') {
                 return res.status(401).json({ message: 'Invalid license' });
+            } else if (err.message === 'No license'){
+                return res.status(401).json({ message: 'License required' });
             }
             else {
                 return res.status(500).json({ message: 'Internal Server Error' });
