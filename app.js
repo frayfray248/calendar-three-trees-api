@@ -14,6 +14,7 @@ const OAS = YAML.load('./calendar-three-trees-doc.yml');
 
 // routes imports
 const groupRoutes = require('./api/routes/groups.js');
+const organizationRoutes = require('./api/routes/organizations');
 
 
 // swagger documentation middleware 
@@ -43,6 +44,7 @@ app.use((req, res, next) => {
 ////////////////
 
 app.use('/groups', groupRoutes);
+app.use('/organizations', organizationRoutes);
 
 
 
