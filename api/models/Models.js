@@ -2,6 +2,7 @@ const Event = require('../models/EventModel');
 const Location = require('../models/LocationModel');
 const Tag = require('../models/TagModel');
 const EventTag = require('./EventTagModel');
+const Organization = require('../models/OrganizationModel');
 
 // associations
 exports.EventLocation = Event.belongsTo(Location, {foreignKey: 'Location_ID', as: 'location'});
@@ -14,3 +15,4 @@ exports.Event = Event;
 exports.Location = Location;
 exports.Tag = Tag;
 exports.EventTag = EventTag;
+exports.Organization = Organization;
