@@ -176,13 +176,19 @@ exports.getEvents = (req, res, next) => {
                         model: Tag,
                         as: 'tags',
                         ...tagsWhereOption
+                    },
+                    {
+                        model: Contact,
+                        as: 'contacts'
                     }
-                ]
+                ],
+                transaction: transaction
             });
 
             // throw error if not found
             if (!events || events.length <= 0) throw new Error('events not found');
 
+            // format the events
             const formatedEvents = events.map((event) => {
 
                 return {
@@ -200,6 +206,14 @@ exports.getEvents = (req, res, next) => {
                         address: event.location.address,
                         postalCode: event.location.postalCode
                     },
+                    contacts: event.contacts.map((contact) => {
+                        return {
+                            id: contact.id,
+                            name: contact.name,
+                            email: contact.email,
+                            phoneNumber: contact.phoneNumber
+                        }
+                    }),
                     tags: event.tags.map(tag => tag.name)
                 }
             });
@@ -240,7 +254,7 @@ exports.deleteEvent = (req, res, next) => {
         try {
 
             // getting event to be deleted
-            const event = await Event.findByPk(req.params.eventId);
+            const event = await Event.findByPk(req.params.eventId, {transaction: transaction});
 
             // throw error if not found
             if (!event) throw new Error('event not found');
@@ -249,22 +263,38 @@ exports.deleteEvent = (req, res, next) => {
             const eventTags = await EventTag.findAll({
                 where: {
                     eventId: event.id,
-                }
+                },
+                transaction: transaction
+            });
+
+            // finding eventContacts related to event (if any)
+            const eventContacts = await EventContact.findAll({
+                where: {
+                    eventId: event.id,
+                },
+                transaction: transaction
             });
 
             // deleting eventTags related to event (if any)
             for (var i = 0; i < eventTags.length; i++) {
-                await eventTags[i].destroy();
+                await eventTags[i].destroy({transaction: transaction});
+            }
+
+            // deleting eventContacts related to event (if any)
+            for (var i = 0; i < eventContacts.length; i++) {
+                await eventContacts[i].destroy({transaction: transaction});
             }
 
             // deleting event
-            await event.destroy();
+            await event.destroy({transaction: transaction});
 
             //commit transaction
             await transaction.commit();
 
             res.status(204).send();
         } catch (err) {
+
+            console.log(err);
 
             // roll back transaction
             await transaction.rollback();
