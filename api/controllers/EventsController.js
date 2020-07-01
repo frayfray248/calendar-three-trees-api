@@ -1,7 +1,7 @@
 const db = require('../../database');
 const Sequelize = require('sequelize');
 const { Op, ValidationError } = Sequelize;
-const { Event, Location, Tag, EventTag} = require('../models/Models');
+const { Event, Location, Tag, EventTag, EventContact, Contact} = require('../models/Models');
 
 
 // add a single event 
@@ -13,16 +13,19 @@ exports.addEvent = (req, res, next) => {
 
         try {
 
-            const locationId = req.body.location.locationId;
+            const locationId = req.body.location.id;
 
             //save or retrieve location
             const savedLocation = await (async (locationId) => {
-                if (locationId > 0) {
+                // if the provided location id is greater than 0,
+                // then the event to be added with use that location id
+                // as its location
+                if (locationId > 0) { 
                     return await Location.findByPk(locationId);
                 } else {
                     const newLocation = Location.build(
                         { ...req.body.location });
-                    return await newLocation.save();
+                    return await newLocation.save({transaction: transaction});
                 }
             })(locationId);
 
@@ -34,16 +37,39 @@ exports.addEvent = (req, res, next) => {
                     locationId: savedLocation.id
                 });
 
-            const savedEvent = await newEvent.save();
+            const savedEvent = await newEvent.save({transaction: transaction});
 
             // create tags
             const savedTags = await Promise.all(req.body.tags.map(async (tag) => {
-                const savedTag = await Tag.findOrCreate({ where: { name: tag } });
-                await EventTag.create({ eventId: savedEvent.id, tagId: savedTag[0].id }, { fields: ['eventId', 'tagId'] })
+                const savedTag = await Tag.findOrCreate({ where: { name: tag }, transaction: transaction });
+                await EventTag.create({ eventId: savedEvent.id, tagId: savedTag[0].id }, { fields: ['eventId', 'tagId'], transaction: transaction })
                     .catch((err) => {
                         console.log(err);
                     });
                 return savedTag[0].name;
+            }));
+
+            // create contacts
+            const savedContacts = await Promise.all(req.body.contacts.map(async (contact) => {
+                const savedContact = await (async (contact) => {
+                    if (contact.id > 0) { 
+                        return await Contact.findByPk(contact.id);
+                    } else {
+                        const { id, ...contactBody} = contact;
+                        const newContact = await Contact.build(
+                            { 
+                                ...contactBody
+                            });
+                        return await newContact.save({transaction: transaction});
+                    }
+                })(contact);
+
+                await EventContact.create(
+                    {eventId: savedEvent.id, contactId: savedContact.id},
+                    {fields: ['eventId', 'contactId'],
+                    transaction: transaction });
+
+                return savedContact;
             }));
 
             //commit transaction
@@ -53,6 +79,7 @@ exports.addEvent = (req, res, next) => {
             await res.status(201).send({
                 event: savedEvent,
                 location: savedLocation,
+                contacts: savedContacts,
                 tags: savedTags
             });
 
@@ -236,7 +263,7 @@ exports.deleteEvent = (req, res, next) => {
             //commit transaction
             await transaction.commit();
 
-            res.status(204).send('Successful delete');
+            res.status(204).send();
         } catch (err) {
 
             // roll back transaction

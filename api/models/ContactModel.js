@@ -28,7 +28,7 @@ const Contact = db.define('Contact', {
     }
 },
     {
-        tableName: 'Event Contacts',
+        tableName: 'Contacts',
         timestamps: false
     });
 
