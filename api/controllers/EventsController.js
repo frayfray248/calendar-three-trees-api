@@ -333,17 +333,26 @@ exports.updateEvent = (req, res, next) => {
         try {
 
             //save or retrieve location
-            const newLocation = await (async (locationId) => {
-                if (locationId > 0) {
-                    const location = await Location.findByPk(locationId, { transaction: transaction });
+            const newLocation = await (async (location) => {
+
+                const { id, ...locationProps } = location;
+
+                if (id > 0) {
+                    const location = await Location.findByPk(id, { transaction: transaction });
                     if (location) return location;
                     else throw new Error('location not found');
                 } else {
-                    const newLocation = Location.build(
-                        { ...req.body.location });
-                    return await newLocation.save({ transaction: transaction });
+
+                    const newLocation = await Location.findOrCreate(
+                        {
+                            where: { ...locationProps },
+                            transaction: transaction
+                        });
+                    return newLocation[0];
                 }
-            })(req.body.location.locationId);
+            })(req.body.location);
+
+
 
             // getting event to be updated
             const event = await Event.findOne(
@@ -397,24 +406,32 @@ exports.updateEvent = (req, res, next) => {
 
             // contacts 
             for (var i = 0; i < contacts.length; i++) {
+
                 const savedContact = await (async (contact) => {
-                    if (contact.id > 0) {
-                        return await Contact.findByPk(contact.id, { transaction: transaction });
+
+                    const { id, ...contactBody } = contact;
+
+                    if (id > 0) {
+                        return await Contact.findByPk(id, { transaction: transaction });
                     } else {
-                        const { id, ...contactBody } = contact;
-                        const newContact = Contact.build(
-                            { ...contactBody });
-                        return await newContact.save({ transaction: transaction });
+                        const newContact = await Contact.findOrCreate({
+                            where: { ...contactBody },
+                            transaction: transaction
+                        });
+                        return newContact[0];
                     }
                 })(contacts[i]);
 
-                await EventContact.create(
-                    { eventId: req.params.eventId, contactId: savedContact.id },
+                await EventContact.findOrCreate(
                     {
+                        where: {
+                            eventId: req.params.eventId,
+                            contactId: savedContact.id
+                        },
                         fields: ['eventId', 'contactId'],
                         transaction: transaction
                     });
-            }
+                };
 
             await transaction.commit();
             res.status(204).send();
