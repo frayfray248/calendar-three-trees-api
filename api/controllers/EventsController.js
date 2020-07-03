@@ -99,16 +99,16 @@ exports.addEvent = (req, res, next) => {
             console.log(err);
 
             if (err instanceof ValidationError) {
-                await res.status(400).JSON({ message: 'Bad or malformed request' });
+                await res.status(400).json({ message: 'Bad or malformed request' });
             }
             else if (err.message === 'Location not found') {
-                await res.status(400).JSON({ message: "Location not found" });
+                await res.status(400).json({ message: "Location not found" });
             }
             else if (err.message === 'Contact not found') {
-                await res.status(400).JSON({ message: "Contact not found" });
+                await res.status(400).json({ message: "Contact not found" });
             }
             else {
-                await res.status(500).JSON({ message: 'Internal server error' });
+                await res.status(500).json({ message: 'Internal server error' });
             }
         }
     })();
@@ -244,17 +244,17 @@ exports.getEvents = (req, res, next) => {
 
             await transaction.rollback();
 
-            // event not found response
-            if (err.message === 'events not found') {
-                res.status(404).send('events not found');
-            } else if (err.message === 'bad query') {
-                res.status(400).send('bad query');
-            }
-            else {
-                await res.status(500).send('Internal server error');
-            }
             console.log(err);
 
+            // event not found response
+            if (err.message === 'events not found') {
+                res.status(404).json({ message: 'events not found' });
+            } else if (err.message === 'bad query') {
+                res.status(400).json({ message: 'bad query' });
+            }
+            else {
+                await res.status(500).json({ message: 'Internal server error' });
+            }
         }
     })();
 }
@@ -316,10 +316,10 @@ exports.deleteEvent = (req, res, next) => {
 
             // event not found response
             if (err.message === 'event not found') {
-                res.status(404).send('event not found');
+                res.status(404).json({ message: 'event not found' });
             }
             // server error response
-            else res.status(500).send('Internal server error');
+            else res.status(500).json({ message: 'Internal server error' });
         }
     })();
 }
@@ -431,7 +431,7 @@ exports.updateEvent = (req, res, next) => {
                         fields: ['eventId', 'contactId'],
                         transaction: transaction
                     });
-                };
+            };
 
             await transaction.commit();
             res.status(204).send();
@@ -440,16 +440,16 @@ exports.updateEvent = (req, res, next) => {
 
             await transaction.rollback();
 
+            console.log(err);
+
             if (err.message === 'event not found') {
-                res.status(404).send('Event not found');
+                res.status(404).json({ message: 'Event not found' });
             } else if (err.message === 'location not found') {
-                res.status(404).send('location not found');
+                res.status(404).json({ message: 'location not found' });
             }
             else {
-                res.status(500).send('Internal server error');
+                res.status(500).json({ message: 'Internal server error' });
             }
-
-            console.log(err);
         }
     })();
 }
@@ -520,14 +520,16 @@ exports.getEvent = (req, res, next) => {
             });
 
         } catch (err) {
-            console.log(err);
+
             await transaction.rollback();
 
+            console.log(err);
+
             if (err.message === 'event not found') {
-                res.status(404).send('Event not found');
+                res.status(404).json({ message: 'Event not found' });
             } else {
 
-                res.status(500).send('Internal server error');
+                res.status(500).json({ message: 'Internal server error' });
             }
         }
     })();
