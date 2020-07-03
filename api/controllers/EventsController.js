@@ -3,23 +3,6 @@ const Sequelize = require('sequelize');
 const { Op, ValidationError } = Sequelize;
 const { Event, Location, Tag, EventTag, EventContact, Contact } = require('../models/Models');
 
-const findOrCreateLocationWithId = async (location) => {
-    const { id, ...locationProps } = location;
-
-    if (id > 0) { // finding an exisitng location if a positive integer id was found
-        const foundLocation = await Location.findByPk(id, { transaction: transaction });
-        if (!foundLocation) throw new Error('Location not found');
-        else return foundLocation;
-    } else { // creating a new location if a negative integer id was found
-        const newLocation = await Location.findOrCreate(
-            {
-                where: { ...locationProps },
-                transaction: transaction
-            });
-        return await newLocation[0];
-    }
-}
-
 
 // add a single event 
 exports.addEvent = (req, res, next) => {
@@ -30,7 +13,22 @@ exports.addEvent = (req, res, next) => {
 
         try {
 
-            const savedLocation = await findOrCreateLocationWithId(location);
+            const savedLocation = await (async (location) => {
+                const { id, ...locationProps } = location;
+
+                if (id > 0) { // finding an exisitng location if a positive integer id was found
+                    const foundLocation = await Location.findByPk(id, { transaction: transaction });
+                    if (!foundLocation) throw new Error('Location not found');
+                    else return foundLocation;
+                } else { // creating a new location if a negative integer id was found
+                    const newLocation = await Location.findOrCreate(
+                        {
+                            where: { ...locationProps },
+                            transaction: transaction
+                        });
+                    return newLocation[0];
+                }
+            })(req.body.location);
 
             if (!savedLocation) throw new Error('Error when finding or creating location');
 
@@ -96,13 +94,12 @@ exports.addEvent = (req, res, next) => {
 
         } catch (err) {
 
-            // roll back transaction
             await transaction.rollback();
 
             console.log(err);
 
             if (err instanceof ValidationError) {
-                await res.status(400).send('Bad or malformed request');
+                await res.status(400).JSON({ message: 'Bad or malformed request' });
             }
             else if (err.message === 'Location not found') {
                 await res.status(400).JSON({ message: "Location not found" });
@@ -111,7 +108,7 @@ exports.addEvent = (req, res, next) => {
                 await res.status(400).JSON({ message: "Contact not found" });
             }
             else {
-                await res.status(500).send('Internal server error');
+                await res.status(500).JSON({ message: 'Internal server error' });
             }
         }
     })();
@@ -514,7 +511,7 @@ exports.getEvent = (req, res, next) => {
             } else {
 
                 res.status(500).send('Internal server error');
-            }           
+            }
         }
     })();
 }
