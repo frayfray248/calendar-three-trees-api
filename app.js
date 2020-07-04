@@ -48,7 +48,7 @@ app.use('/organizations', organizationRoutes);
 
 
 
-// error message for all requests that get passed the implemented routes
+// error message for all unimplemented routes
 app.use((req, res, next) => {
     const error = new Error('Not found');
     error.status = 404;

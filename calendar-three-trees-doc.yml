@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: 'calendar-three-trees-api'
   description: 'The REST api for the Calendar Three Trees App'
-  version: 1.0.0
+  version: 0.5.0
 
 servers:
   - url: http://calendarapi.3treestech.ca/
@@ -17,6 +17,8 @@ components:
           properties:
             name:
               type: string
+            content:
+              type: string
             startDate:
               type: string
               format: date-time
@@ -29,7 +31,7 @@ components:
         location:
           type: object
           properties:
-            locationId:
+            id:
               type: integer
             name:
               type: string
@@ -39,8 +41,22 @@ components:
               type: string
               maximum: 6
               minimum: 6
-        organizationId:
-          type: integer
+        contacts:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+                maximum: 45
+              email:
+                type: string
+                maximum: 45
+              phoneNumber:
+                type: string
+                maximum: 45
         tags:
           type: array
           items:
