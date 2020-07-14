@@ -32,7 +32,7 @@ const Event = db.define('Event', {
         allowNull: false,
         field: 'Event_End',
     },
-    moreInforUrl: {
+    moreInfoUrl: {
         type: STRING(90),
         allowNull: true,
         field: 'Event_MoreInfoURL',
