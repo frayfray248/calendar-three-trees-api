@@ -8,6 +8,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
+const http = require('http');
 
 // file imports
 const OAS = YAML.load('./calendar-three-trees-doc.yml');
@@ -30,12 +31,12 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header(
         'Access-Control-Allow-Headers', 
-        'Origin, X-Request-With, Content-Type, Accept', 'Authorization'
+        'Origin, X-Request-With, Content-Type, Accept, Authorization, licensekey, z'
     );
-    if (req.method === 'OPTIONS') {
-        res.header('Access-Control-Allow-Methods', 'PUT, POST, DELETE, GET');
-        return res.status(200).json({});
-    }
+     if (req.method === 'OPTIONS') {
+         res.header('Access-Control-Allow-Methods', 'PUT, POST, DELETE, GET');
+         return res.status(200).json({});
+     }
     next();
 });
 
@@ -64,5 +65,11 @@ app.use((error, req, res, next) => {
     })
 });
 
+
+const port = 80;
+
+const server = http.createServer(app);
+
+server.listen(port);
 
 module.exports = app;
