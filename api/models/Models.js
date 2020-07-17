@@ -37,3 +37,4 @@ exports.Organization = Organization;
 exports.OrganizationProgram = OrganizationProgram;
 exports.Contact = Contact;
 exports.EventContact = EventContact;
+exports.Program = Program;
